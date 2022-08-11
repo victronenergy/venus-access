@@ -8,7 +8,8 @@ class SettingsInfo : public VeQItemSettingsInfo
 public:
 	SettingsInfo()
 	{
-		add("Services/Console", 0, 0, 0);
+		if (QFile("/dev/ttyconsole").exists())
+			add("Services/Console", 0, 0, 0);
 		add("System/RemoteSupport", 0, 0, 1);
 		add("System/SSHLocal", 0, 0, 1);
 	}
@@ -66,14 +67,15 @@ void Application::onLocalSettingsTimeout()
 
 void Application::manageDaemontoolsServices()
 {
-	new DeamonToolsConsole(mSettings, "/service/vegetty", "Settings/Services/Console", this);
+	if (QFile("/dev/ttyconsole").exists())
+		new DeamonToolsConsole(mSettings, "/service/vegetty", "Settings/Services/Console", this, QStringList() << "-s" << "vegetty");
 
 	QList<QString> sshdlist = QList<QString>() << "Settings/System/RemoteSupport" << "Settings/System/SSHLocal" << "Settings/System/VncInternet";
 	// false: no restart -> symlinks / firewall rules will be changed instead.
-	new DaemonToolsService(mSettings, "/service/openssh", sshdlist, this, false);
+	new DaemonToolsService(mSettings, "/service/openssh", sshdlist, this, false, QStringList() << "-s" << "openssh");
 
 	QList<QString> list = QList<QString>() << "Settings/System/RemoteSupport" << "Settings/System/VncInternet";
-	new DaemonToolsService(mSettings, "/service/ssh-tunnel", list, this, false);
+	new DaemonToolsService(mSettings, "/service/ssh-tunnel", list, this, false, QStringList() << "-s" << "ssh-tunnel");
 }
 
 void Application::remoteSupportChanged(VeQItem *item, QVariant var)
