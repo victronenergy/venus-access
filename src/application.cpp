@@ -100,9 +100,9 @@ void Application::sshLocalChanged(VeQItem *item, QVariant var)
 		return;
 
 	if (var.toBool())
-		system("firewall allow tcp ssh");
+		(void) system("firewall allow tcp ssh");
 	else
-		system("firewall deny tcp ssh");
+		(void) system("firewall deny tcp ssh");
 }
 
 void Application::init()
