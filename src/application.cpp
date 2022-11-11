@@ -1,5 +1,5 @@
 #include <velib/qt/daemontools_service.hpp>
-#include <velib/qt/v_busitems.h>
+#include <velib/qt/ve_dbus_connection.hpp>
 
 #include "application.hpp"
 
@@ -19,8 +19,7 @@ Application::Application::Application(int &argc, char **argv) :
 	QCoreApplication(argc, argv),
 	mLocalSettingsTimeout()
 {
-	VBusItems::setConnectionType(QDBusConnection::SystemBus);
-	QDBusConnection dbus = VBusItems::getConnection();
+	QDBusConnection dbus = VeDbusConnection::getConnection();
 	if (!dbus.isConnected()) {
 		qCritical() << "DBus connection failed";
 		::exit(EXIT_FAILURE);
@@ -28,7 +27,7 @@ Application::Application::Application(int &argc, char **argv) :
 
 	VeQItemDbusProducer *producer = new VeQItemDbusProducer(VeQItems::getRoot(), "dbus", false, false);
 	producer->setAutoCreateItems(false);
-	producer->open(VBusItems::getConnection());
+	producer->open(dbus);
 	mServices = producer->services();
 	mSettings = new VeQItemDbusSettings(producer->services(), QString("com.victronenergy.settings"));
 

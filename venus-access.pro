@@ -23,13 +23,13 @@ INCLUDEPATH += ext/velib/inc
 
 HEADERS += \
     ext/velib/inc/velib/qt/daemontools_service.hpp \
-    ext/velib/inc/velib/qt/v_busitems.h \
+    ext/velib/inc/velib/qt/ve_dbus_connection.hpp \
     ext/velib/inc/velib/qt/ve_qitem.hpp \
     ext/velib/inc/velib/qt/ve_qitems_dbus.hpp \
 
 SOURCES += \
     ext/velib/src/qt/daemontools_service.cpp \
-    ext/velib/src/qt/v_busitems.cpp \
+    ext/velib/src/qt/ve_dbus_connection.cpp \
     ext/velib/src/qt/ve_qitem.cpp \
     ext/velib/src/qt/ve_qitems_dbus.cpp \
 
