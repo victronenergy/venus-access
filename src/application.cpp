@@ -32,7 +32,7 @@ Application::Application::Application(int &argc, char **argv) :
 	mSettings = new VeQItemDbusSettings(producer->services(), QString("com.victronenergy.settings"));
 
 	VeQItem *item = mServices->itemGetOrCreate("com.victronenergy.settings");
-	connect(item, SIGNAL(stateChanged(VeQItem*,State)), SLOT(onLocalSettingsStateChanged(VeQItem*)));
+	connect(item, SIGNAL(stateChanged(VeQItem::State)), SLOT(onLocalSettingsStateChanged(VeQItem::State)));
 	if (item->getState() == VeQItem::Synchronized) {
 		qDebug() << "Localsettings found";
 		init();
@@ -45,12 +45,12 @@ Application::Application::Application(int &argc, char **argv) :
 	}
 }
 
-void Application::onLocalSettingsStateChanged(VeQItem *item)
+void Application::onLocalSettingsStateChanged(VeQItem::State state)
 {
 	mLocalSettingsTimeout.stop();
 
-	if (item->getState() != VeQItem::Synchronized) {
-		qCritical() << "Localsettings not available" << item->getState();
+	if (state != VeQItem::Synchronized) {
+		qCritical() << "Localsettings not available" << state;
 		::exit(EXIT_FAILURE);
 	}
 
@@ -77,10 +77,8 @@ void Application::manageDaemontoolsServices()
 	new DaemonToolsService(mSettings, "/service/ssh-tunnel", list, this, false, QStringList() << "-s" << "ssh-tunnel");
 }
 
-void Application::remoteSupportChanged(VeQItem *item, QVariant var)
+void Application::remoteSupportChanged(QVariant var)
 {
-	Q_UNUSED(item);
-
 	if (!var.isValid())
 		return;
 
@@ -91,10 +89,8 @@ void Application::remoteSupportChanged(VeQItem *item, QVariant var)
 		QFile::remove("/run/ssh_support_keys");
 }
 
-void Application::sshLocalChanged(VeQItem *item, QVariant var)
+void Application::sshLocalChanged(QVariant var)
 {
-	Q_UNUSED(item);
-
 	if (!var.isValid())
 		return;
 
@@ -114,11 +110,11 @@ void Application::init()
 
 	// Remote support
 	VeQItem *remoteSupport = mSettings->root()->itemGetOrCreate("Settings/System/RemoteSupport");
-	remoteSupport->getValueAndChanges(this, SLOT(remoteSupportChanged(VeQItem *, QVariant)));
+	remoteSupport->getValueAndChanges(this, SLOT(remoteSupportChanged(QVariant)));
 
 	// SSH on LAN
 	VeQItem *sshLocal = mSettings->root()->itemGetOrCreate("Settings/System/SSHLocal");
-	sshLocal->getValueAndChanges(this, SLOT(sshLocalChanged(VeQItem *, QVariant)));
+	sshLocal->getValueAndChanges(this, SLOT(sshLocalChanged(QVariant)));
 
 	manageDaemontoolsServices();
 }

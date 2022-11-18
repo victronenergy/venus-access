@@ -10,10 +10,10 @@ public:
 	Application(int &argc, char **argv);
 
 protected slots:
-	void onLocalSettingsStateChanged(VeQItem *item);
+	void onLocalSettingsStateChanged(VeQItem::State state);
 	void onLocalSettingsTimeout();
-	void remoteSupportChanged(VeQItem *item, QVariant var);
-	void sshLocalChanged(VeQItem *item, QVariant var);
+	void remoteSupportChanged(QVariant var);
+	void sshLocalChanged(QVariant var);
 
 private:
 	void manageDaemontoolsServices();
