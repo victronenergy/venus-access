@@ -17,4 +17,7 @@ SOURCES = \
     src/application.cpp \
     src/main.cpp \
 
+QMAKE_CXXFLAGS *= -ffunction-sections
+QMAKE_LFLAGS *= -Wl,--gc-sections
+
 include("ext/veutil/veutil.pri")
