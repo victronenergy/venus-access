@@ -1,6 +1,6 @@
 #include <QCoreApplication>
 
-#include <velib/qt/ve_qitems_dbus.hpp>
+#include <veutil/qt/ve_qitems_dbus.hpp>
 
 class Application : public QCoreApplication
 {

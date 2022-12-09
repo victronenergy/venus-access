@@ -1,5 +1,5 @@
-#include <velib/qt/daemontools_service.hpp>
-#include <velib/qt/ve_dbus_connection.hpp>
+#include <veutil/qt/daemontools_service.hpp>
+#include <veutil/qt/ve_dbus_connection.hpp>
 
 #include "application.hpp"
 
