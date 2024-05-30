@@ -29,7 +29,7 @@ Application::Application::Application(int &argc, char **argv) :
 	producer->setAutoCreateItems(false);
 	producer->open(dbus);
 	mServices = producer->services();
-	mSettings = new VeQItemDbusSettings(producer->services(), QString("com.victronenergy.settings"));
+	mSettings = new VeQItemDbusSettings(mServices, QString("com.victronenergy.settings"));
 
 	VeQItem *item = mServices->itemGetOrCreate("com.victronenergy.settings");
 	connect(item, SIGNAL(stateChanged(VeQItem::State)), SLOT(onLocalSettingsStateChanged(VeQItem::State)));
