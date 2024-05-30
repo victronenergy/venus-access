@@ -69,16 +69,29 @@ void Application::manageDaemontoolsServices()
 	if (QFile("/dev/ttyconsole").exists())
 		new DeamonToolsConsole(mSettings, "/service/vegetty", "Settings/Services/Console", this, QStringList() << "-s" << "vegetty");
 
-	QList<QString> sshdlist = QList<QString>() << "Settings/System/RemoteSupport" << "Settings/System/SSHLocal" << "Settings/System/VncInternet";
-	// false: no restart -> symlinks / firewall rules will be changed instead.
-	new DaemonToolsService(mSettings, "/service/openssh", sshdlist, this, false, QStringList() << "-s" << "openssh");
+	mOpensshSvc = new DaemonToolsService("/service/openssh", this);
+	mOpensshSvc->setSveCtlArgs(QStringList() << "-s" << "openssh");
+	mOpensshSvc->setRestart(false);
 
-	QList<QString> list = QList<QString>() << "Settings/System/RemoteSupport" << "Settings/System/VncInternet";
-	new DaemonToolsService(mSettings, "/service/ssh-tunnel", list, this, false, QStringList() << "-s" << "ssh-tunnel");
+	mTunnelSvc = new DaemonToolsService("/service/ssh-tunnel", this);
+	mTunnelSvc->setSveCtlArgs(QStringList() << "-s" << "ssh-tunnel");
+	mTunnelSvc->setRestart(false);
+}
+
+void Application::checkSshServices()
+{
+	bool tunnelUp = mRemoteSupport->getLocalValue().toBool() == true ||
+					mTunnelRequest->getLocalValue().toBool() == true;
+	bool sshUp = tunnelUp || mSshLocal->getLocalValue().toBool() == true;
+
+	mOpensshSvc->installOrRemove(sshUp);
+	mTunnelSvc->installOrRemove(tunnelUp);
 }
 
 void Application::remoteSupportChanged(QVariant var)
 {
+	checkSshServices();
+
 	if (!var.isValid())
 		return;
 
@@ -91,6 +104,8 @@ void Application::remoteSupportChanged(QVariant var)
 
 void Application::sshLocalChanged(QVariant var)
 {
+	checkSshServices();
+
 	if (!var.isValid())
 		return;
 
@@ -108,13 +123,19 @@ void Application::init()
 		::exit(EXIT_FAILURE);
 	}
 
-	// Remote support
-	VeQItem *remoteSupport = mSettings->root()->itemGetOrCreate("Settings/System/RemoteSupport");
-	remoteSupport->getValueAndChanges(this, SLOT(remoteSupportChanged(QVariant)));
-
-	// SSH on LAN
-	VeQItem *sshLocal = mSettings->root()->itemGetOrCreate("Settings/System/SSHLocal");
-	sshLocal->getValueAndChanges(this, SLOT(sshLocalChanged(QVariant)));
-
 	manageDaemontoolsServices();
+
+	// Remote support
+	mRemoteSupport = mSettings->root()->itemGetOrCreate("Settings/System/RemoteSupport");
+
+	// SSH daemon on LAN
+	mSshLocal = mSettings->root()->itemGetOrCreate("Settings/System/SSHLocal");
+
+	// Venus-platform evaluates more complex tunnel request...
+	mTunnelRequest = mServices->itemGetOrCreate("com.victronenergy.platform/ConnectVrmTunnel");
+
+	// mind the order, request the values _after_ all items are created.
+	mRemoteSupport->getValueAndChanges(this, SLOT(remoteSupportChanged(QVariant)));
+	mSshLocal->getValueAndChanges(this, SLOT(sshLocalChanged(QVariant)));
+	mTunnelRequest->getValueAndChanges(this, SLOT(checkSshServices()));
 }
