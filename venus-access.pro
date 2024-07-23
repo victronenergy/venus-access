@@ -10,6 +10,8 @@ unix {
 }
 !isEmpty(target.path): INSTALLS += target
 
+equals(QT_MAJOR_VERSION, 6): QMAKE_CXXFLAGS += -std=c++17
+
 HEADERS = \
     src/application.hpp \
 
