@@ -64,11 +64,21 @@ void Application::onLocalSettingsTimeout()
 	::exit(EXIT_FAILURE);
 }
 
+void Application::onGetValueEvent(const VeQItemEvent *error)
+{
+	if (error->type() == VeQItemEvent::VE_QITEM_BUS_ERROR) {
+		qCritical() << "a bus error occured, exiting";
+		::exit(EXIT_FAILURE);
+	}
+}
+
 void Application::manageDaemontoolsServices()
 {
-	if (QFile("/dev/ttyconsole").exists())
+	if (QFile("/dev/ttyconsole").exists()) {
 		new DeamonToolsConsole(mSettings, "/service/vegetty", "Settings/Services/Console", this, QStringList() << "-s" << "vegetty");
-
+		VeQItem *console = mSettings->root()->itemGet("Settings/Services/Console");
+		connect(console, &VeQItem::getValueResult, this, &Application::onGetValueEvent);
+	}
 	mOpensshSvc = new DaemonToolsService("/service/openssh", this);
 	mOpensshSvc->setSveCtlArgs(QStringList() << "-s" << "openssh");
 	mOpensshSvc->setRestart(false);
@@ -127,12 +137,15 @@ void Application::init()
 
 	// Remote support
 	mRemoteSupport = mSettings->root()->itemGetOrCreate("Settings/System/RemoteSupport");
+	connect(mRemoteSupport, &VeQItem::getValueResult, this, &Application::onGetValueEvent);
 
 	// SSH daemon on LAN
 	mSshLocal = mSettings->root()->itemGetOrCreate("Settings/System/SSHLocal");
+	connect(mSshLocal, &VeQItem::getValueResult, this, &Application::onGetValueEvent);
 
 	// Venus-platform evaluates more complex tunnel request...
 	mTunnelRequest = mServices->itemGetOrCreate("com.victronenergy.platform/ConnectVrmTunnel");
+	connect(mTunnelRequest, &VeQItem::getValueResult, this, &Application::onGetValueEvent);
 
 	// mind the order, request the values _after_ all items are created.
 	mRemoteSupport->getValueAndChanges(this, SLOT(remoteSupportChanged(QVariant)));

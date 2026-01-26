@@ -14,6 +14,7 @@ protected slots:
 	void checkSshServices();
 	void onLocalSettingsStateChanged(VeQItem::State state);
 	void onLocalSettingsTimeout();
+	void onGetValueEvent(VeQItemEvent const *error);
 	void remoteSupportChanged(QVariant var);
 	void sshLocalChanged(QVariant var);
 
